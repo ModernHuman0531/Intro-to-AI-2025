@@ -99,18 +99,72 @@ def train(model: CNN, train_loader: DataLoader, criterion, optimizer, device)->f
         # Use loss.item() instead of loss is becauseto break the graph, and get the value of the loss
         # loss.item() means the value of the loss, and it is a float number
         total_loss += loss.item()
-
+    
     avg_loss = total_loss / len(train_loader)
     return avg_loss
 
-
+"""Implementation of validate: Test the model on validation dataset 
+1. Set the model to the evaluation mode, and set the model to the device(GPU)
+2. Disable the gradient calculation, because we don't need to update the model's parameter
+3. Keep cycling over the validation dataset.
+4. Calculate the loss of the model, and calculate the accuracy of the model
+5. Return the average loss and accuracy of the data
+"""
 def validate(model: CNN, val_loader: DataLoader, criterion, device)->Tuple[float, float]:
     # (TODO) Validate the model and return the average loss and accuracy of the data, we suggest use tqdm to know the progress
-    raise NotImplementedError
-    return avg_loss, accuracy
+    model.eval()
+    total_loss, correct = 0, 0
 
+    # Disable the gradient calculation, can save the meomry and speed up the process
+    with torch.no_grad():
+        for images, labels in val_loader:
+            # Take the data to the GPU
+            images, labels = images.to(device), labels.to(device)
+            # Foward pass the model, and get the output of the model
+            outputs = model(images)
+            # Use criterion(loss function) to calculate the difference between the output and label
+            loss = criterion(outputs, labels)
+            # Use loss.item() to break the graph, and get the value of the loss
+            total_loss += loss.item()
+
+            # Calculate the accuracy of the model, the return value of torch.max() is the maximum value and the index of the maximum value
+            # torch.max(output, dim), dim means the which direction we want to find maximum value, 0 means the vertical direction, 1 means the horizontal direction 
+            _, predicted = torch.max(outputs, 1) # We want to check maximum value in horizontal direction, so dim = 1
+            # Calculate the number of correct prediction, and accumulate it
+            # .sum is to count the number of true in tensor, and .item() is to transform the tensor to a float number
+            # predicted and labels both value are tensor, so we don't need to use .numpy() to transform it to numpy array
+            correct += (predicted == labels).sum().item()
+    
+    # len(val_holder) means the number of epochs in the validation dataset, and len(val_loader.dataset) means the number of samples in the validation dataset
+    avg_loss, accuracy = total_loss/len(val_loader), correct/len(val_loader.dataset)
+    return avg_loss, accuracy
+"""Implementation of test function: Test the model on testing dataset and write the result to 'CNN.csv'
+1. Set the model to evaluation mode
+2. Disable the gradient calculation, because we don't need to update the model's parameter
+3. Create Dataloader for test dataset, because we need to test the model on the test dataset
+4. Keep cycling over the test dataset.
+5. Foward pass the model, and get the output of the model
+
+"""
 def test(model: CNN, test_loader: DataLoader, criterion, device):
     # (TODO) Test the model on testing dataset and write the result to 'CNN.csv'
-    raise NotImplementedError
+    model.eval()
+    result = []
+
+    with torch.no_grad():
+        for images, img_ids in test_loader:
+            # Take the data to GPU
+            images = images.to(device)
+            # Foward pass the model, and get the output of the model
+            output = model(images)
+            # Get the predicted class of the model, and get the index of the maximum value
+            _, predicted = torch.max(output, 1)
+            # Append the predicted class and image id to the result list
+            #Use zip is to combine the result together, and the result is a list of tuple, each tuple is (image_id, predicted result)
+            for img_id, pred in zip(img_ids, predicted.cpu().numpy()):# .cpu() is to transfer the tensor to CPU, and .numpy() is to transform the tensor to numpy array 
+                result.append({"id": img_id, "prediction": int(pred)})
+    # Turn the result to a pandas dataframe, and save it to 'CNN.csv'
+    df = pd.DataFrame(result) #Turn the result to a pandas table
+    df.to_csv('CNN.csv', index=False) # Save the result to 'CNN.csv'  
     print(f"Predictions saved to 'CNN.csv'")
-    return
+    return df
