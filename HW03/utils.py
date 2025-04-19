@@ -6,20 +6,20 @@ from typing import List, Tuple
 import matplotlib.pyplot as plt
 
 class TrainDataset(Dataset):
-    def __init__(self, images, labels):
-        self.transform = transforms.Compose([
+    def __init__(self, images, labels):# images: path of images, labels: class of images
+        self.transform = transforms.Compose([# transform the image certain size
             transforms.Grayscale(num_output_channels=3),
             transforms.Resize((224, 224)),
             transforms.ToTensor()
         ])
         self.images, self.labels = images, labels
 
-    def __len__(self):
+    def __len__(self):# return the number of images
         return len(self.images)
 
     def __getitem__(self, idx):
-        image_path = self.images[idx]
-        image = PIL.Image.open(image_path)
+        image_path = self.images[idx]# Get specific image path
+        image = PIL.Image.open(image_path)# Open the image
 
         if self.transform:
             image = self.transform(image)
@@ -48,18 +48,58 @@ class TestDataset(Dataset):
 
         base_name = os.path.splitext(os.path.basename(image_path))[0]
         return image, base_name
-    
+"""Implement load_train_dataset process: Load training dataset from given path, and give every image their corresponding label
+1. Load the image from the path "data/train/", the subfolders have already been classified
+2. Create correspomding dictionary for the labels
+3. Scanning all the subfolders from "data/train/", for every subfolder
+    a. Get the label of the subfolder(like elephant)
+    b. Use dictionary to turn the label into number,0->elephant, 1->jaguar, 2->lion, 3->parrot, 4->penguin
+    c. Run over the images in the subfolder, and get the path of every image
+"""    
 def load_train_dataset(path: str='data/train/')->Tuple[List, List]:
     # (TODO) Load training dataset from the given path, return images and labels
-    images = []
-    labels = []
-    raise NotImplementedError
+    images = []# All the training images corresponding path
+    labels = []# Labels to the number, 
+    # Because we know the name and we want to find the corresponding number, so we design to let name be the key
+    label_dict = {
+        'elephant': 0,
+        'jaguar': 1,
+        'lion': 2,
+        'parrot': 3,
+        'penguin': 4
+    }
+    # Use os.walk() to scan all the subfolders, os.walk() can handle more than 1 layer
+    for root, dirs, files in os.walk(path):
+        """
+        root: Current folder's path
+        dirs: sub folders list
+        files: All files in current folder
+        """
+        # Ignore the ./daata/train/, we want it's subfolder,there have images
+        if root == path:
+            continue
+        #Extract the last name of folder
+        label_name = os.path.basename(root)
+        #Loop through all the files in this folder
+        for file in files:
+            # Filter the file to make sure only read .jpg and .png file
+            if file.endswith(('.jpg', '.png')):
+                # Put path and corresponding label in each list
+                labels.appennd(label_dict[label_name])
+                # Use os.path.join function to paste path and file's name together
+                images.append(os.path.join(root, file))        
     return images, labels
-
+"""Implementation of load_data_set
+1. Run all the images in the given folder
+2. Store the path of each image to images and return it
+"""
 def load_test_dataset(path: str='data/test/')->List:
     # (TODO) Load testing dataset from the given path, return images
     images = []
-    raise NotImplementedError
+    for root, _, files in os.walk(path):
+        for file in files:
+            if file.endwith(('.jpg', 'png')):
+                images.append(os.path.join(root, file))
     return images
 
 def plot(train_losses: List, val_losses: List):
