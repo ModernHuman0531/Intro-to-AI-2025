@@ -11,6 +11,8 @@ from decision_tree import ConvNet, DecisionTree, get_features_and_labels, get_fe
 from CNN import CNN, train, validate, test
 from utils import TrainDataset, TestDataset, load_train_dataset, load_test_dataset, plot
 
+import time # Help us to calculate the time of the training process
+
 """
 Notice:
     1) You can't add any additional package
@@ -50,20 +52,59 @@ def main():
 
     train_losses = []
     val_losses = []
+    val_accuracies = []
     max_acc = 0
+    start_time = time.time()
 
     EPOCHS = 10
     for epoch in range(EPOCHS): #epoch
+        """ Design the training log, to help us monitor and keep track of the training process
+        1. Print each epoch's time and training loss and validation loss and validation accuracy
+        2. Keep track of the best accuracy and sace the model if the accuracy is better than the previous best accuracy
+        
+        """
         train_loss = train(model, train_loader, criterion, optimizer, device)
         val_loss, val_acc = validate(model, val_loader, criterion, device)
-
+        
+        # Append the result into each list
         train_losses.append(train_loss)
         val_losses.append(val_loss)
+        val_accuracies.append(val_acc)
 
         # (TODO) Print the training log to help you monitor the training process
         #        You can save the model for future usage
-        raise NotImplementedError
+        
+        # If the accuracy is better than the previous best accuracy, save the model
+        if val_acc > max_acc:
+            max_acc = val_acc
+            # Use torch.save() tp save the model, torch.save(obj, f), other parameter just use default value
+            # obj in here means the model, and f means the path to save the model, better way is to store dict in obj
+            #, we can save the model and other information in the dict
+            torch.save({
+                'epoch': epoch, # Save times of training
+                'model_state_dict': model.state_dict(), # Save all the parameters of ther model, most important part
+                'val_accuracy': val_acc # Save the accuracy of the model
+           }, 'best_model.pth')
+        
+        epoch_time = time.time() - start_time
+        # Learning rate means how many change we wamt to make to the model's parameter for every epoch
+        # Higher learning rate means we wan to make more change to the model's parameter for every epoch
+        lr = optimizer.param_group[0]['lr']
 
+        # Print the training log use logger.info()
+        # Add f is to let us get variable value in the string, and we can use {} to get the variable value     
+        logger.info = {
+            f"Epoch: {epoch+1}/{EPOCHS} | "
+            f"Time: {epoch_time}s | "
+            f" Learning Rate: {lr:.2e} | " # use {:.2e} to print the learning rate in scientific notation
+            f"Train Loss: {train_loss:4f} | " #use {:.4f} to print the loss in 4 decimal places
+            f"Val Loss: {val_loss:.4f} | "
+            f"Val Acc: {val_accuracies:.2%} | " # use{.2%} is to print tyhe accuracy in percentage in 2 decimal places
+            f"Best Acc: {max_acc:.2%}"
+        } 
+
+
+    logger.info("Traning completed:")
     logger.info(f"Best Accuracy: {max_acc:.4f}")
 
     """

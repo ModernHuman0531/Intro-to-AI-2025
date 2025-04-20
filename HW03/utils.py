@@ -69,7 +69,7 @@ def load_train_dataset(path: str='data/train/')->Tuple[List, List]:
         'penguin': 4
     }
     # Use os.walk() to scan all the subfolders, os.walk() can handle more than 1 layer
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         """
         root: Current folder's path
         dirs: sub folders list
@@ -85,7 +85,7 @@ def load_train_dataset(path: str='data/train/')->Tuple[List, List]:
             # Filter the file to make sure only read .jpg and .png file
             if file.endswith(('.jpg', '.png')):
                 # Put path and corresponding label in each list
-                labels.appennd(label_dict[label_name])
+                labels.append(label_dict[label_name])
                 # Use os.path.join function to paste path and file's name together
                 images.append(os.path.join(root, file))        
     return images, labels
@@ -105,6 +105,24 @@ def load_test_dataset(path: str='data/test/')->List:
 def plot(train_losses: List, val_losses: List):
     # (TODO) Plot the training loss and validation loss of CNN, and save the plot to 'loss.png'
     #        xlabel: 'Epoch', ylabel: 'Loss'
-    raise NotImplementedError
+
+    plt.figure(figuresize=(10, 6), dpi=300)
+    # Plot the training loss and validation loss
+    plt.plot(train_losses, label="Training loss", color="blue", linewidth=2)
+    plt.plot(val_losses, label="Validation loss", color="red",linewidth=2)
+
+    # Add title and labels
+    plt.xlabel("Epoch", fontsize=12)
+    plt.ylabel("Loss", fontsize=12)
+    plt.title("Training and Validation Loss", fontsize=14)
+    # Add grid and legend
+    plot.grid(True)
+    plot.legend(fontsize=12)
+
+    plt.tight_layout()
+
+    # Save the plot to 'loss.png'
+    plt.savefig("loss.png")
+    plt.close()  # Close the plot to free memory
     print("Save the plot to 'loss.png'")
     return
