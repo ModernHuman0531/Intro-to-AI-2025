@@ -102,6 +102,12 @@ def load_test_dataset(path: str='data/test/')->List:
                 images.append(os.path.join(root, file))
     return images
 
+"""Implementation of plot function: 
+1. Plot the training loss vs epoch and validation loss vs epoch
+2. Set the x-axis label to 'Epoch' and y-axis label to 'Loss'
+3. Use blue line for training loss abd red line for validation loss
+4. Save the plot to 'loss.png'
+"""
 def plot(train_losses: List, val_losses: List):
     # (TODO) Plot the training loss and validation loss of CNN, and save the plot to 'loss.png'
     #        xlabel: 'Epoch', ylabel: 'Loss'

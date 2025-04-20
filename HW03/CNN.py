@@ -13,7 +13,6 @@ import pandas as pd
     2         | 32 -> 64               | 224 -> 112(maxpooling set kernal = 2 will reduce the size by half)
     3         | 64 -> 128              | 112 -> 56 (maxpooling set kernal = 2 will reduce the size by half)
 3. Goes to fully connected layer.
-
 """
 class CNN(nn.Module):
     def __init__(self, num_classes=5):
@@ -156,7 +155,9 @@ def test(model: CNN, test_loader: DataLoader, criterion, device):
             # Take the data to GPU
             images = images.to(device)
             # Foward pass the model, and get the output of the model
-            output = model(images)
+            
+            output = model(images)# The type of output is tensor, and the shape is [B, 5], B means batch size, 5 means the number of classes
+            
             # Get the predicted class of the model, and get the index of the maximum value
             _, predicted = torch.max(output, 1)
             # Append the predicted class and image id to the result list
