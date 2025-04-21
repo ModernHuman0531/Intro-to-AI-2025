@@ -48,15 +48,49 @@ class DecisionTree:
         6. Keep recursively calling _build_tree to grow left and right tree until meet the stop condition
         7. Return the tree node that include feature_index, thershold, left, right and class(only for leaf node to get predicted class
         """
+        # Check if the depth is greater than max_depth, if so return None
+        if(depth>=self.max_depth or len(np.unique)==1):# len(np.unique(y))==1 means all the data in node are in the same class
+            return {'class': np.argmax(np.bincount(y))} # Return the class of the node, np.bincount(y) is to count the number of each class in y, and np.argmax is to get the index of the maximum value
 
+        # Find the best feature index and threshold to split the data            
+        feature, threshold = self._best_split(X,y)
+        if feature is None: # Can't find the best feature to split the data, so return None
+            return {'class': np.argmax(np.bincount(y))} # Return the most common class in the node
+        # Split the data into left and right node
+        (X_left, y_left), (X_right, y_right) = self._split_data(X, y, feature, threshold)
+        # Update the progress bar
+        self.progress.update(1)
+
+        # Keep recursively calling _build_tree to build left and right tree
+        return {
+            'feature_index': feature,
+            'threshold': threshold,
+            'left': self._build_tree(X_left, y_left, depth+1),
+            'right': self._build_tree(X_right, y_right, depth+1),
+        }
     def predict(self, X: pd.DataFrame)->np.ndarray:
         # (TODO) Call _predict_tree to traverse the decision tree to return the classes of the testing dataset
-        raise NotImplementedError
-
+        """ Implementation of the predict function:
+        X is the DataFrame of the testing dataset, (n_samples, n_features) we use X.uterrows to traverse the dataset
+        1. Use X.iterrows to traverse the dataset to get the features 
+        2. Use _predict_tree to traverse the all the features and put the result into array 
+        """
+        return np.array([self._predict_tree(x, self.tree) for _, x in X.iterrows()])
     def _predict_tree(self, x, tree_node):
         # (TODO) Recursive function to traverse the decision tree
-        raise NotImplementedError
 
+        """Implementation of the _predict_tree function:
+        x is the features of the dataset, and tree_node is the current node of the tree
+        1. Check if the node is leaf node, if so return the class of the node
+        2. Check node's feature_index and threshold, if the featire's value < threshold, go to left_tree, else go to right tree
+        """
+        if 'class' in tree_node: # 'class' is the jey of leaf-node, so when we encounter means the node is leaf-node
+             return tree_node['class']
+
+        if x[tree_node['fearture_index']] < tree_node['threshold']:
+            return self._predict_tree(x, tree_node['left']) # Go to left tree
+        else:
+            return self._predict_tree(x, tree_node['right']) # Go to right tree 
     def _split_data(X: pd.DataFrame, y: np.ndarray, feature_index: int, threshold: float):
         # (TODO) split one node into left and right node 
         """Implementation of the _split_data function:
