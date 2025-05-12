@@ -45,3 +45,5 @@ class Agent:
         """
         self.q_table = [0] * self.k
         self.action_count = [0] * self.k
+class Agent2:
+    
