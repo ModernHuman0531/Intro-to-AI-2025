@@ -67,7 +67,13 @@ def part3():
         Env.reset()
         agent_i.reset()
 
-            
+def part5():
+    """
+    Need to perform the following experiments 2000 times independently
+    1. Construct a 10-armed bandit environment with non-stationary reward distribution
+    2. Construct an agent with epsilon-greedy eploration
+    3. Run the agent in the environment for 10000 steps 
+    """
 
 
         
