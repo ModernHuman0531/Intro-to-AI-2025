@@ -19,7 +19,7 @@ class Agent:
 
         # If the randomnumber is less than epsilon, do the exloration
         if random_number < self.epsilon:
-            action = random.radiant(0, self.k-1)
+            action = random.radint(0, self.k-1)
             # Else, do the exploitation, which is choose the action with the highest q value
         else:
             action = self.q_table.index(max(self.q_table))
@@ -35,7 +35,7 @@ class Agent:
         else:
             # Update the reward with the step-size update method
             # The formula is Q(a) = Q(a) + alpha*(reward-Q(a))
-            self.q_table[action] += self.alpha(reward-self.q_table[action])
+            self.q_table[action] += self.alpha*(reward-self.q_table[action])
 
     def reset(self):
         self.q_table = [0] * self.k
