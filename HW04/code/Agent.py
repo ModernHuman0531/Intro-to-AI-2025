@@ -19,7 +19,7 @@ class Agent:
 
         # If the randomnumber is less than epsilon, do the exloration
         if random_number < self.epsilon:
-            action = random.radint(0, self.k-1)
+            action = random.randint(0, self.k-1)
             # Else, do the exploitation, which is choose the action with the highest q value
         else:
             action = self.q_table.index(max(self.q_table))

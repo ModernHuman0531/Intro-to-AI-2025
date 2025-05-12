@@ -135,8 +135,72 @@ def part5():
         plt.savefig(f"part5_epsilons{epsilons[i]}.png")
         plt.show()
 
-        
+def part7():
+    """
+    Run the following experiments 2000 times independently
+    1. Construct a 10-armed bandit environment with non-stationary reward distrbution
+    2. Construct the agent in step-size update method
+    3. Run the agent in the environment for 10000 steps
+    4. Plot the average reward and the optimal action selection percentage for each step
+    """
+    times = 2000
+    steps = 10000
+    alpha = 0.1
+    epsilons = [0, 0.01, 0.1]
+
+    # Run the agent in different epsilon`
+    for i in range(len(epsilons)):
+        # creatre the lists to store the average reward and optimal action percentage
+        avg_reward, optimal_action = [0]*10000, [0]*10000
+        # Test the agent and environment for 2000 times
+        for time in range(times):
+            # Create the environment
+            Env = BanditEnv(10, stationary=False)
+            # Create the agent
+            agent_i = Agent(10, epsilons[i], alpha=alpha)
+            # Run the agent for 10000 steps
+            for step in range(steps):
+                # Select the action
+                action = agent_i.select_action()
+                # Take the action in the a=state to check the reward
+                reward = Env.step(action)
+                # Update the q_value in that action
+                agent_i.update_q(action, reward)
+                # Update the optimal action count
+                optimal_action[step] += 1 if action == Env.means.index(max(Env.means)) else 0
+                # Update the reward of the average reward
+                avg_reward[step] += reward
+            # Reset the environment
+            Env.reset()
+            # Reset the agent
+            agent_i.reset()
+        # Calculate the average reward and the optimal action selection percentage
+        optimal_action = [optimal_action[i]*100/times for i in range(steps)]
+        avg_reward = [avg_reward[i]/times for i in range(steps)]
+        # Draw the line of the average reward and the optimal action selection
+        total_step = range(1, steps+1)
+        plt.figure(figsize=(12, 6))
+
+        #Plot the average reward
+        plt.subplot(1, 2, 1)
+        plt.plot(total_step, avg_reward, label="Average Reward")
+        plt.xlabel("Steps")
+        plt.ylabel("Average Rewards")
+        plt.title(f"Average Reward with Epsilons = {epsilons[i]}")
+        plt.legend()
+
+        # Plot the optimal action selection percentage
+        plt.subplot(1, 2, 2)
+        plt.plot(total_step, optimal_action, label="Optimal Action Selection Percentage") 
+        plt.xlabel("Steps")
+        plt.ylabel("Optimal Action Selection Percentage")   
+        plt.title(f"Optimal Action Selection Percentage with Epsilons = {epsilons[i]}")
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig(f"part7_epsilons{epsilons[i]}.png")
+        plt.show()
 if __name__ == "__main__":
     #part3()
-    part5()
-    #part7()
+    #part5()
+    part7()
