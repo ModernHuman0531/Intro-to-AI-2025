@@ -1,49 +1,43 @@
 import random
 class Agent:
-    def __init__(self, k, epsilon):
+    """
+    1. If the alpha is None, the agent will be same as part2(), and the update_q method will use 
+    sample average method
+    2. If the alpha is not None, the agent's update_q method will use the step-size update method
+    3. The step-size update method will use the formula:
+    Q(a) = Q(a) + alpha*(reward - Q(a)), alpha is the step-size
+    """
+    def __init__(self, k, epsilon, alpha=None):
         self.k = k
         self.epsilon = epsilon
-        # Build a Q table to store the estimation
+        self.alpha = alpha
         self.q_table = [0] * self.k
-        # Build a list to store the number of times each action has been taken
         self.action_count = [0] * self.k
     def select_action(self):
-        """
-        Choose an action based on the estimated expected reward for each action
-        1. Apply epsilon greedy strategy
-        2. Choose the action with the highest estimated expected reward
-        3. If the random number is less than epsilon, choose a random action
-        4. If the random number is greater than epsilon, choose the action with the highest estimated expected reward
-        5. Return the action
-        """
-        # Generate a random number between 0 and 1
+        # random.random will pick a number between 0 to 1
         random_number = random.random()
-        # Design the action in the range of 0 to k-1
+
+        # If the randomnumber is less than epsilon, do the exloration
         if random_number < self.epsilon:
-            action = random.randint(0, self.k - 1)
+            action = random.radiant(0, self.k-1)
+            # Else, do the exploitation, which is choose the action with the highest q value
         else:
-            # max(self.q_table) will return the max value in the q_table, .index will return the index of the first max value
             action = self.q_table.index(max(self.q_table))
         return action
     def update_q(self, action, reward):
-        """
-        Update the estimated expexted reward of the chossen action
-        1. The estimated expected reward is updated using the formula:
-        Q(a) = Q(a) + (reward - Q(a)) / N
-        2. N is the number of times the action has been taken
-        3. N is updated by adding 1 to the action count
-        """
-        # Update the action count by 1
-        self.action_count[action] += 1
-        # Update the estimated expexted reward using the formula
-        # Q(a) = Q(a) + (reward - Q(a)) / N
-        self.q_table[action] += (reward - self.q_table[action])/self.action_count[action] 
+        # If alpha is None, use the sample average method
+        if self.alpha == None:
+            # Update the action count by 1
+            self.action_count[action] += 1
+            # Update the reward with the sample average method
+            # The formula is Q(a) = Q(a) + (reward - Q(a)) / N
+            self.q_table[action] += (reward - self.q_table[action]) / self.action_count[action]
+        else:
+            # Update the reward with the step-size update method
+            # The formula is Q(a) = Q(a) + alpha*(reward-Q(a))
+            self.q_table[action] += self.alpha(reward-self.q_table[action])
 
     def reset(self):
-        """
-        Reset the agent
-        """
         self.q_table = [0] * self.k
-        self.action_count = [0] * self.k
-class Agent2:
-    
+        self.action_count = [0] * self.k   
+
